@@ -62,6 +62,9 @@ struct Opt {
     include_basic_actions: bool,
 
     #[arg(long)]
+    skip_ids: bool,
+
+    #[arg(long)]
     include_marks: bool,
 }
 
@@ -85,6 +88,7 @@ async fn main() {
         opt.deck,
         opt.include_basic_actions,
         opt.include_marks,
+        opt.skip_ids,
     )
     .await;
 
@@ -183,6 +187,7 @@ async fn build_documents(
     decks: Vec<String>,
     include_basic_actions: bool,
     include_marks: bool,
+    skip_ids: bool,
 ) {
     let mut document = String::new();
     document.push_str("<!DOCTYPE html>\n");
@@ -208,6 +213,10 @@ async fn build_documents(
                 .unwrap()
                 .as_i64()
                 .unwrap();
+            let card_type_code = card_data["data"][0]["type_code"].as_str().unwrap();
+            if card_type_code == "identity" && skip_ids {
+                continue;
+            }
             for _ in 0..count {
                 document.push_str(&format!(
                     "<img src=\"{}/cut/c-{:>03}.png\" />",
